@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>(Ramy-P6) Activity ID Expander V2 — Free Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --border: #2a2d35;
+    --border-active: #4a9eff;
+    --text-primary: #f0f1f3;
+    --text-secondary: #8a8f9e;
+    --text-muted: #555a68;
+    --accent: #4a9eff;
+    --accent-dim: #1a3a5c;
+    --success: #2dd4a0;
+    --success-dim: #0d3d2e;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px 80px;
+  }
+
+  /* grid texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(74,158,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,158,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 560px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* top badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(74,158,255,0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* heading block */
+  .tool-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+  }
+
+  h1 span {
+    color: var(--accent);
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 36px;
+    max-width: 480px;
+  }
+
+  /* info strip */
+  .info-strip {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .info-item svg {
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* divider */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 36px;
+  }
+
+  /* form card */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 24px;
+  }
+
+  .form-title {
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    letter-spacing: 0.06em;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .field input::placeholder { color: var(--text-muted); }
+
+  .field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(74,158,255,0.12);
+  }
+
+  .field input.error {
+    border-color: #e05050;
+    box-shadow: 0 0 0 3px rgba(224,80,80,0.12);
+  }
+
+  .error-msg {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: #e05050;
+    margin-top: 6px;
+    display: none;
+  }
+
+  .error-msg.show { display: block; }
+
+  .btn {
+    width: 100%;
+    margin-top: 8px;
+    padding: 14px 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn:hover { background: #5aaeff; }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+  /* success state */
+  .success-card {
+    background: var(--success-dim);
+    border: 1px solid rgba(45,212,160,0.3);
+    border-radius: 16px;
+    padding: 36px;
+    text-align: center;
+    display: none;
+  }
+
+  .success-card.show { display: block; }
+  .form-card.hide { display: none; }
+
+  .success-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(45,212,160,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+  .success-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--success);
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .success-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--success);
+    color: #0a1f17;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+
+  .download-btn:hover { opacity: 0.85; }
+
+  /* privacy note */
+  .privacy {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* what you get section */
+  .features {
+    margin-top: 48px;
+    border-top: 1px solid var(--border);
+    padding-top: 36px;
+  }
+
+  .features-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 20px;
+  }
+
+  .feature-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .feature-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(74,158,255,0.2);
+    border-radius: 4px;
+    padding: 2px 8px;
+    height: fit-content;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .feature-text strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .feature-text span {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* author footer */
+  .author {
+    margin-top: 48px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    border: 1px solid rgba(74,158,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .author-info strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .author-info span {
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--text-muted);
+  }
+
+  .author-info a.linkedin {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--accent);
+    text-decoration: none;
+    margin-top: 4px;
+    opacity: 0.85;
+    transition: opacity 0.2s;
+  }
+
+  .author-info a.linkedin:hover { opacity: 1; }
+
+  @media (max-width: 480px) {
+    .form-card { padding: 24px 20px; }
+    .info-strip { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="badge">
+    <span class="badge-dot"></span>
+    Free Tool — Primavera P6
+  </div>
+
+  <p class="tool-label">Ramy-P6 Tool V2</p>
+
+  <h1>Activity ID<br><span>Expander V2</span></h1>
+
+  <p class="subtitle">
+    Extends the default Activity ID limit from <strong style="color:var(--accent)">20 → 40 characters</strong> in your Primavera P6 SQLite database — safely, directly, and without touching your schedule data.
+  </p>
+
+  <div class="info-strip">
+    <div class="info-item">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Free forever
+    </div>
+    <div class="info-item">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
+      No schedule data touched
+    </div>
+    <div class="info-item">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+      </svg>
+      Instant download
+    </div>
+  </div>
+
+  <!-- AUTHOR -->
+  <div class="author">
+    <div class="author-avatar">RA</div>
+    <div class="author-info">
+      <strong>Ramy Ali</strong>
+      <a href="https://www.linkedin.com/in/ramyalifahmy" target="_blank" rel="noopener noreferrer" class="linkedin">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        linkedin.com/in/ramyalifahmy
+      </a>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- FORM CARD -->
+  <div class="form-card" id="formCard">
+    <p class="form-title">// Get instant access</p>
+
+    <div class="field">
+      <label>Full name</label>
+      <input type="text" id="name" placeholder="e.g. Ahmed Al-Rashidi" autocomplete="name">
+      <p class="error-msg" id="nameErr">Please enter your name.</p>
+    </div>
+
+    <div class="field">
+      <label>Work email</label>
+      <input type="email" id="email" placeholder="you@company.com" autocomplete="email">
+      <p class="error-msg" id="emailErr">Please enter a valid email address.</p>
+    </div>
+
+    <div class="field">
+      <label>Company / Project (optional)</label>
+      <input type="text" id="company" placeholder="e.g. AECOM, Saudi Aramco, Freelance" autocomplete="organization">
+    </div>
+
+    <button class="btn" id="submitBtn" onclick="handleSubmit()">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+      </svg>
+      Download Free Tool
+    </button>
+  </div>
+
+  <!-- SUCCESS CARD -->
+  <div class="success-card" id="successCard">
+    <div class="success-icon">
+      <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="#2dd4a0" stroke-width="2.5">
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    </div>
+    <p class="success-title">Download starting...</p>
+    <p class="success-text">
+      Your download has started. If it doesn't begin automatically,<br>use the button below.
+    </p>
+    <a href="#" class="download-btn" id="manualDownload">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+      </svg>
+      Download again
+    </a>
+  </div>
+
+
+  <!-- WHAT YOU GET -->
+  <div class="features">
+    <p class="features-label">// What's included</p>
+
+    <div class="feature-item">
+      <span class="feature-num">01</span>
+      <div class="feature-text">
+        <strong>The utility (.exe / .py)</strong>
+        <span>Connects to your P6 SQLite database and modifies the Activity ID column constraint directly.</span>
+      </div>
+    </div>
+
+    <div class="feature-item">
+      <span class="feature-num">02</span>
+      <div class="feature-text">
+        <strong>Step-by-step guide (PDF)</strong>
+        <span>How to locate your SQLite DB, run the tool safely, and verify the change in P6.</span>
+      </div>
+    </div>
+
+    <div class="feature-item">
+      <span class="feature-num">03</span>
+      <div class="feature-text">
+        <strong>Backup checklist</strong>
+        <span>A simple 3-step pre-run checklist to protect your data before any database modification.</span>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────────────────────────
+  // REPLACE this with your actual Google Apps Script Web App URL
+  // (see setup guide in the README)
+  const SHEET_ENDPOINT = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
+  // REPLACE this with your actual file download URL
+  // (Google Drive direct link or any hosted file URL)
+  const DOWNLOAD_URL = 'YOUR_TOOL_DOWNLOAD_LINK_HERE';
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  function validateEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+  }
+
+  async function handleSubmit() {
+    const name    = document.getElementById('name');
+    const email   = document.getElementById('email');
+    const company = document.getElementById('company');
+    const btn     = document.getElementById('submitBtn');
+    const nameErr = document.getElementById('nameErr');
+    const emailErr= document.getElementById('emailErr');
+
+    // reset errors
+    [name, email].forEach(el => el.classList.remove('error'));
+    [nameErr, emailErr].forEach(el => el.classList.remove('show'));
+
+    let valid = true;
+    if (!name.value.trim()) {
+      name.classList.add('error');
+      nameErr.classList.add('show');
+      valid = false;
+    }
+    if (!validateEmail(email.value)) {
+      email.classList.add('error');
+      emailErr.classList.add('show');
+      valid = false;
+    }
+    if (!valid) return;
+
+    btn.disabled = true;
+    btn.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.8s linear infinite">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+      Preparing download...`;
+
+    const style = document.createElement('style');
+    style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
+
+    // send data to Google Sheet (fire-and-forget — don't block download on it)
+    const payload = {
+      name: name.value.trim(),
+      email: email.value.trim(),
+      company: company.value.trim() || '—',
+      timestamp: new Date().toISOString(),
+      source: document.referrer || 'direct'
+    };
+
+    // fire data collection silently
+    if (SHEET_ENDPOINT !== 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+      fetch(SHEET_ENDPOINT, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => {}); // silent fail — never block download
+    }
+
+    // small delay for UX feel, then trigger download
+    setTimeout(() => {
+      triggerDownload();
+      showSuccess();
+    }, 900);
+  }
+
+  function triggerDownload() {
+    if (DOWNLOAD_URL === 'YOUR_TOOL_DOWNLOAD_LINK_HERE') return;
+    const a = document.createElement('a');
+    a.href = DOWNLOAD_URL;
+    a.download = '';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function showSuccess() {
+    document.getElementById('manualDownload').href = DOWNLOAD_URL;
+    document.getElementById('formCard').classList.add('hide');
+    document.getElementById('successCard').classList.add('show');
+    document.getElementById('successCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+</script>
+
+</body>
+</html>
