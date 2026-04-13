@@ -601,7 +601,7 @@
       name: name.value.trim(),
       email: email.value.trim(),
       company: company.value.trim() || '—',
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toLocaleString('en-GB', { timeZone: 'Asia/Riyadh' }),
       source: document.referrer || 'direct'
     };
 
